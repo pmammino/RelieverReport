@@ -384,3 +384,27 @@ relief_split$gmLI <- round(relief_split$gmLI,2)
 relief_split$CON1 <- round(relief_split$CON1,2)
 relief_split$ADREIP <- round(relief_split$ADREIP,4)
 relief_split$xADREIP <- round(relief_split$xADREIP, 4)
+
+
+PlatoonScore <- read.csv("data/SplitsAll.csv")
+PlatoonScore <- rename(PlatoonScore, c("Year" = "Season"))
+PlatoonScore <- transform(PlatoonScore, PlatoonScore = as.numeric(PlatoonScore))
+
+SampleNew <- merge(Sample, PlatoonScore, by = c("Name","Season"), all = TRUE)
+SampleNew <- SampleNew[complete.cases(SampleNew),]
+SampleNew <- SampleNew[,c(1,2,3,4,5,6,7,8,13,9,10,11)]
+PCA <- prcomp(SampleNew[c(5,6,9)], center = TRUE, scale. = TRUE)
+SampleNew <- cbind(SampleNew, predict(PCA))
+xADREIPPlatoon <- lm(ADREIP ~ CON1 + PC1, data = SampleNew)
+SampleNew$xADREIP <- predict(xADREIPPlatoon)
+
+reliefNew <- merge(relief, PlatoonScore, by = c("Name","Season"), all = TRUE)
+reliefNew <- reliefNew[,c(1,2,3,4,5,6,7,8,13,10,9,11)]
+reliefNew <- cbind(reliefNew, predict(PCA, newdata = reliefNew))
+reliefNew$xADREIP <- predict(xADREIPPlatoon, type = "response", newdata = reliefNew)
+reliefNew <- reliefNew[,c(1,2,3,4,5,6,9,7,8,11,10,13,12,16)]
+reliefNew$xADREIP <- round(reliefNew$xADREIP, 4)
+reliefNew$PC1 <- round(reliefNew$PC1, 2)
+reliefNew$PlatoonScore <- round(reliefNew$PlatoonScore, 3)
+
+
