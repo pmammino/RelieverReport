@@ -2,7 +2,8 @@ name: relieverreport
 title:
 account: pmammino
 server: shinyapps.io
+hostUrl: https://api.shinyapps.io/v1
 appId: 204807
-bundleId: 1189782
+bundleId: 2468398
 url: https://relieverreport.shinyapps.io/relieverreport/
-when: 1516751659.81129
+when: 1570192192.98327

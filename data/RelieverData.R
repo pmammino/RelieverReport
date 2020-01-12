@@ -1,13 +1,14 @@
 library(rvest)
 library(plyr)
-
+library(SDMTools)
+library(ggplot2)
 
 url <- "http://www.fangraphs.com/leaders.aspx?pos=all&stats=rel&lg=all&qual=0&type=c,13,113,37,46,66,70&season=2016&month=0&season1=2016&ind=0&team=0&rost=0&age=0&filter=&players=0&page=1_1000"
 relief2016 <- url %>%
   read_html() %>%
   html_nodes(xpath= '//*[(@id = "LeaderBoard1_dg1")]/table[1]') %>%
   html_table()
-url2 <- "http://www.fangraphs.com/leaders.aspx?pos=all&stats=rel&lg=all&qual=0&type=c,13,66,70&season=2017&month=0&season1=2012&ind=0&team=0,ss&rost=0&age=0&filter=&players=0"
+url2 <- "http://www.fangraphs.com/leaders.aspx?pos=all&stats=rel&lg=all&qual=0&type=c,13,66,70&season=2019&month=0&season1=2012&ind=0&team=0,ss&rost=0&age=0&filter=&players=0"
 average <- url2 %>%
   read_html() %>%
   html_nodes(xpath= '//*[(@id = "LeaderBoard1_dg1")]/table[1]') %>%
@@ -35,6 +36,18 @@ relief2012 <- url6 %>%
   
 url7 <- "http://www.fangraphs.com/leaders.aspx?pos=all&stats=rel&lg=all&qual=0&type=c,13,113,37,46,66,70&season=2017&month=0&season1=2017&ind=0&team=0&rost=0&age=0&filter=&players=0&page=1_1000"
 relief2017 <- url7 %>%
+  read_html() %>%
+  html_nodes(xpath= '//*[(@id = "LeaderBoard1_dg1")]/table[1]') %>%
+  html_table()
+
+url8 <- "http://www.fangraphs.com/leaders.aspx?pos=all&stats=rel&lg=all&qual=0&type=c,13,113,37,46,66,70&season=2018&month=0&season1=2018&ind=0&team=0&rost=0&age=0&filter=&players=0&page=1_1000"
+relief2018 <- url8 %>%
+  read_html() %>%
+  html_nodes(xpath= '//*[(@id = "LeaderBoard1_dg1")]/table[1]') %>%
+  html_table()
+
+url9 <- "http://www.fangraphs.com/leaders.aspx?pos=all&stats=rel&lg=all&qual=0&type=c,13,113,37,46,66,70&season=2019&month=0&season1=2019&ind=0&team=0&rost=0&age=0&filter=&players=0&page=1_1000"
+relief2019 <- url9 %>%
   read_html() %>%
   html_nodes(xpath= '//*[(@id = "LeaderBoard1_dg1")]/table[1]') %>%
   html_table()
@@ -114,6 +127,30 @@ relief2017<- transform(relief2017, GBFB = as.numeric(GBFB))
 relief2017<- transform(relief2017, RE24 = as.numeric(RE24))
 relief2017<- transform(relief2017, gmLI = as.numeric(gmLI))
 
+relief2018 <- relief2018[[1]]
+relief2018 <-rename(relief2018,c("X1"="#", "X2"="Name", "X3"="Team","X4"="IP", "X5"="SwStr", "X6"="BB", "X7" = "GBFB", "X8" = "RE24", "X9" = "gmLI"))
+relief2018 <- relief2018[-1]
+relief2018 <- relief2018[-c(1,2,3), ]
+relief2018 <- relief2018[complete.cases(relief2018), ]
+relief2018 <- transform(relief2018, SwStr = as.numeric(sub("%", "",SwStr)))
+relief2018<- transform(relief2018, IP = as.numeric(IP))
+relief2018<- transform(relief2018, BB = as.numeric(BB))
+relief2018<- transform(relief2018, GBFB = as.numeric(GBFB))
+relief2018<- transform(relief2018, RE24 = as.numeric(RE24))
+relief2018<- transform(relief2018, gmLI = as.numeric(gmLI))
+
+relief2019 <- relief2019[[1]]
+relief2019 <-rename(relief2019,c("X1"="#", "X2"="Name", "X3"="Team","X4"="IP", "X5"="SwStr", "X6"="BB", "X7" = "GBFB", "X8" = "RE24", "X9" = "gmLI"))
+relief2019 <- relief2019[-1]
+relief2019 <- relief2019[-c(1,2,3), ]
+relief2019 <- relief2019[complete.cases(relief2019), ]
+relief2019 <- transform(relief2019, SwStr = as.numeric(sub("%", "",SwStr)))
+relief2019<- transform(relief2019, IP = as.numeric(IP))
+relief2019<- transform(relief2019, BB = as.numeric(BB))
+relief2019<- transform(relief2019, GBFB = as.numeric(GBFB))
+relief2019<- transform(relief2019, RE24 = as.numeric(RE24))
+relief2019<- transform(relief2019, gmLI = as.numeric(gmLI))
+
 average$IP.int <- round(average$IP)
 average$diff <- round(average$IP - average$IP.int,1)
 average$add <- ifelse(average$diff == 0.2, 0.66, ifelse(average$diff == 0.1,0.34, 0))
@@ -144,12 +181,24 @@ relief2017$diff <- round(relief2017$IP - relief2017$IP.int,1)
 relief2017$add <-ifelse(relief2017$diff == 0.2, 0.66, ifelse(relief2017$diff == 0.1, 0.34, 0))
 relief2017$Innings <- relief2017$IP.int + relief2017$add
 
+relief2018$IP.int <- round(relief2018$IP)
+relief2018$diff <- round(relief2018$IP - relief2018$IP.int,1)
+relief2018$add <-ifelse(relief2018$diff == 0.2, 0.66, ifelse(relief2018$diff == 0.1, 0.34, 0))
+relief2018$Innings <- relief2018$IP.int + relief2018$add
+
+relief2019$IP.int <- round(relief2019$IP)
+relief2019$diff <- round(relief2019$IP - relief2019$IP.int,1)
+relief2019$add <-ifelse(relief2019$diff == 0.2, 0.66, ifelse(relief2019$diff == 0.1, 0.34, 0))
+relief2019$Innings <- relief2019$IP.int + relief2019$add
+
 relief2012$gmLI <- relief2012$gmLI/average$gmLI[1]
 relief2013$gmLI <- relief2013$gmLI/average$gmLI[2]
 relief2014$gmLI <- relief2014$gmLI/average$gmLI[3]
 relief2015$gmLI <- relief2015$gmLI/average$gmLI[4]
 relief2016$gmLI <- relief2016$gmLI/average$gmLI[5]
 relief2017$gmLI <- relief2017$gmLI/average$gmLI[6]
+relief2018$gmLI <- relief2018$gmLI/average$gmLI[7]
+relief2019$gmLI <- relief2019$gmLI/average$gmLI[8]
 
 relief2016$ADRE <- relief2016$RE24 * relief2016$gmLI
 relief2016$ADREIP <- relief2016$ADRE / relief2016$Innings
@@ -165,14 +214,22 @@ relief2012$ADREIP <- relief2012$ADRE / relief2012$Innings
 relief2017$ADRE <- relief2017$RE24 * relief2017$gmLI
 relief2017$ADREIP <- relief2017$ADRE / relief2017$Innings
 
+relief2018$ADRE <- relief2018$RE24 * relief2018$gmLI
+relief2018$ADREIP <- relief2018$ADRE / relief2018$Innings
+
+relief2019$ADRE <- relief2019$RE24 * relief2019$gmLI
+relief2019$ADREIP <- relief2019$ADRE / relief2019$Innings
+
 relief2012$Season <- 2012
 relief2013$Season <- 2013
 relief2014$Season <- 2014
 relief2015$Season <- 2015
 relief2016$Season <- 2016
 relief2017$Season <- 2017
+relief2018$Season <- 2018
+relief2019$Season <- 2019
 
-relief <- rbind(relief2012, relief2013, relief2014, relief2015, relief2016)
+relief <- rbind(relief2012, relief2013, relief2014, relief2015, relief2016, relief2017, relief2018)
 ISO <- read.csv("data/ISO.csv")
 relief <- merge(relief, ISO, by = c("Name","Season"), all = TRUE)
 relief <- relief[, c(1,2,3,4,5,6,7,16,9,15)]
@@ -186,14 +243,14 @@ Sample <- Sample[,c(1,2,3,4,5,6,7,8,9,11,10)]
 xADREIP <- lm(ADREIP ~ CON1 + SwStr + BB, data = Sample)
 Sample$xADREIP <- predict(xADREIP)
 
-ISO2017 <- read.csv("data/ISO2017.csv")
-ISO2017 <- ISO2017[,c(2,17,19)]
-ISO2017$ISO <- ISO2017$SLG - ISO2017$AVG
-ISO2017 <- ISO2017[,c(1,4)]
-relief2017 <- merge(relief2017, ISO2017, by = c("Name"), all = TRUE)
-relief2017 <- relief2017[, c(1,15,2,3,4,5,6,16,8,14)]
+ISO2019 <- read.csv("data/ISO2019.csv")
+ISO2019 <- ISO2019[,c(2,17,19)]
+ISO2019$ISO <- ISO2019$SLG - ISO2019$AVG
+ISO2019 <- ISO2019[,c(1,4)]
+relief2019 <- merge(relief2019, ISO2019, by = c("Name"), all = TRUE)
+relief2019 <- relief2019[, c(1,15,2,3,4,5,6,16,8,14)]
 
-relief <- rbind(relief,relief2017)
+relief <- rbind(relief,relief2019)
 
 relief <- cbind(relief, predict(PCACON, newdata = relief))
 relief <- rename(relief, c("PC1" = "CON1", "PC2" = "CON2"))
@@ -205,190 +262,9 @@ relief$CON1 <- round(relief$CON1,2)
 relief$ADREIP <- round(relief$ADREIP,4)
 relief$xADREIP <- round(relief$xADREIP, 4)
 
-url8 <- "http://www.fangraphs.com/leaders.aspx?pos=all&stats=rel&lg=all&qual=0&type=c,13,113,37,46,66,70&season=2016&month=0&season1=2016&ind=0&team=0,to&rost=0&age=0&filter=&players=0&page=1_1000"
-relief2016_split <- url8 %>%
-  read_html() %>%
-  html_nodes(xpath= '//*[(@id = "LeaderBoard1_dg1")]/table[1]') %>%
-  html_table()
-url9 <- "http://www.fangraphs.com/leaders.aspx?pos=all&stats=rel&lg=all&qual=0&type=c,13,113,37,46,66,70&season=2015&month=0&season1=2015&ind=0&team=0,to&rost=0&age=0&filter=&players=0&page=1_1000"
-relief2015_split <- url9 %>%
-  read_html() %>%
-  html_nodes(xpath= '//*[(@id = "LeaderBoard1_dg1")]/table[1]') %>%
-  html_table()
-url10 <- "http://www.fangraphs.com/leaders.aspx?pos=all&stats=rel&lg=all&qual=0&type=c,13,113,37,46,66,70&season=2014&month=0&season1=2014&ind=0&team=0,to&rost=0&age=0&filter=&players=0&page=1_1000"
-relief2014_split <- url10 %>%
-  read_html() %>%
-  html_nodes(xpath= '//*[(@id = "LeaderBoard1_dg1")]/table[1]') %>%
-  html_table()
-url11 <- "http://www.fangraphs.com/leaders.aspx?pos=all&stats=rel&lg=all&qual=0&type=c,13,113,37,46,66,70&season=2013&month=0&season1=2013&ind=0&team=0,to&rost=0&age=0&filter=&players=0&page=1_1000"
-relief2013_split <- url11 %>%
-  read_html() %>%
-  html_nodes(xpath= '//*[(@id = "LeaderBoard1_dg1")]/table[1]') %>%
-  html_table()
-url12 <- "http://www.fangraphs.com/leaders.aspx?pos=all&stats=rel&lg=all&qual=0&type=c,13,113,37,46,66,70&season=2012&month=0&season1=2012&ind=0&team=0,to&rost=0&age=0&filter=&players=0&page=1_1000"
-relief2012_split <- url12 %>%
-  read_html() %>%
-  html_nodes(xpath= '//*[(@id = "LeaderBoard1_dg1")]/table[1]') %>%
-  html_table()
-
-url13 <- "http://www.fangraphs.com/leaders.aspx?pos=all&stats=rel&lg=all&qual=0&type=c,13,113,37,46,66,70&season=2017&month=0&season1=2017&ind=0&team=0,to&rost=0&age=0&filter=&players=0&page=1_1000"
-relief2017_split <- url13 %>%
-  read_html() %>%
-  html_nodes(xpath= '//*[(@id = "LeaderBoard1_dg1")]/table[1]') %>%
-  html_table()
-
-relief2016_split <- relief2016_split[[1]]
-relief2016_split <-rename(relief2016_split,c("X1"="#", "X2"="Name", "X3"="Team","X4"="IP", "X5"="SwStr", "X6"="BB", "X7" = "GBFB", "X8" = "RE24", "X9" = "gmLI"))
-relief2016_split <- relief2016_split[-1]
-relief2016_split <- relief2016_split[-c(1,2,3), ]
-relief2016_split <- relief2016_split[complete.cases(relief2016_split), ]
-relief2016_split <- transform(relief2016_split, SwStr = as.numeric(sub("%", "",SwStr)))
-relief2016_split<- transform(relief2016_split, IP = as.numeric(IP))
-relief2016_split<- transform(relief2016_split, BB = as.numeric(BB))
-relief2016_split<- transform(relief2016_split, GBFB = as.numeric(GBFB))
-relief2016_split<- transform(relief2016_split, RE24 = as.numeric(RE24))
-relief2016_split<- transform(relief2016_split, gmLI = as.numeric(gmLI))
-relief2015_split <- relief2015_split[[1]]
-relief2015_split <-rename(relief2015_split,c("X1"="#", "X2"="Name", "X3"="Team","X4"="IP", "X5"="SwStr", "X6"="BB", "X7" = "GBFB", "X8" = "RE24", "X9" = "gmLI"))
-relief2015_split <- relief2015_split[-1]
-relief2015_split <- relief2015_split[-c(1,2,3), ]
-relief2015_split <- relief2015_split[complete.cases(relief2015_split), ]
-relief2015_split <- transform(relief2015_split, SwStr = as.numeric(sub("%", "",SwStr)))
-relief2015_split<- transform(relief2015_split, IP = as.numeric(IP))
-relief2015_split<- transform(relief2015_split, BB = as.numeric(BB))
-relief2015_split<- transform(relief2015_split, GBFB = as.numeric(GBFB))
-relief2015_split<- transform(relief2015_split, RE24 = as.numeric(RE24))
-relief2015_split<- transform(relief2015_split, gmLI = as.numeric(gmLI))
-relief2014_split <- relief2014_split[[1]]
-relief2014_split <-rename(relief2014_split,c("X1"="#", "X2"="Name", "X3"="Team","X4"="IP", "X5"="SwStr", "X6"="BB", "X7" = "GBFB", "X8" = "RE24", "X9" = "gmLI"))
-relief2014_split <- relief2014_split[-1]
-relief2014_split <- relief2014_split[-c(1,2,3), ]
-relief2014_split <- relief2014_split[complete.cases(relief2014_split), ]
-relief2014_split <- transform(relief2014_split, SwStr = as.numeric(sub("%", "",SwStr)))
-relief2014_split<- transform(relief2014_split, IP = as.numeric(IP))
-relief2014_split<- transform(relief2014_split, BB = as.numeric(BB))
-relief2014_split<- transform(relief2014_split, GBFB = as.numeric(GBFB))
-relief2014_split<- transform(relief2014_split, RE24 = as.numeric(RE24))
-relief2014_split<- transform(relief2014_split, gmLI = as.numeric(gmLI))
-relief2013_split <- relief2013_split[[1]]
-relief2013_split <-rename(relief2013_split,c("X1"="#", "X2"="Name", "X3"="Team","X4"="IP", "X5"="SwStr", "X6"="BB", "X7" = "GBFB", "X8" = "RE24", "X9" = "gmLI"))
-relief2013_split <- relief2013_split[-1]
-relief2013_split <- relief2013_split[-c(1,2,3), ]
-relief2013_split <- relief2013_split[complete.cases(relief2013_split), ]
-relief2013_split <- transform(relief2013_split, SwStr = as.numeric(sub("%", "",SwStr)))
-relief2013_split<- transform(relief2013_split, IP = as.numeric(IP))
-relief2013_split<- transform(relief2013_split, BB = as.numeric(BB))
-relief2013_split<- transform(relief2013_split, GBFB = as.numeric(GBFB))
-relief2013_split<- transform(relief2013_split, RE24 = as.numeric(RE24))
-relief2013_split<- transform(relief2013_split, gmLI = as.numeric(gmLI))
-relief2012_split <- relief2012_split[[1]]
-relief2012_split <-rename(relief2012_split,c("X1"="#", "X2"="Name", "X3"="Team","X4"="IP", "X5"="SwStr", "X6"="BB", "X7" = "GBFB", "X8" = "RE24", "X9" = "gmLI"))
-relief2012_split <- relief2012_split[-1]
-relief2012_split <- relief2012_split[-c(1,2,3), ]
-relief2012_split <- relief2012_split[complete.cases(relief2012_split), ]
-relief2012_split <- transform(relief2012_split, SwStr = as.numeric(sub("%", "",SwStr)))
-relief2012_split<- transform(relief2012_split, IP = as.numeric(IP))
-relief2012_split<- transform(relief2012_split, BB = as.numeric(BB))
-relief2012_split<- transform(relief2012_split, GBFB = as.numeric(GBFB))
-relief2012_split<- transform(relief2012_split, RE24 = as.numeric(RE24))
-relief2012_split<- transform(relief2012_split, gmLI = as.numeric(gmLI))
-
-relief2017_split <- relief2017_split[[1]]
-relief2017_split <-rename(relief2017_split,c("X1"="#", "X2"="Name", "X3"="Team","X4"="IP", "X5"="SwStr", "X6"="BB", "X7" = "GBFB", "X8" = "RE24", "X9" = "gmLI"))
-relief2017_split <- relief2017_split[-1]
-relief2017_split <- relief2017_split[-c(1,2,3), ]
-relief2017_split <- relief2017_split[complete.cases(relief2017_split), ]
-relief2017_split <- transform(relief2017_split, SwStr = as.numeric(sub("%", "",SwStr)))
-relief2017_split<- transform(relief2017_split, IP = as.numeric(IP))
-relief2017_split<- transform(relief2017_split, BB = as.numeric(BB))
-relief2017_split<- transform(relief2017_split, GBFB = as.numeric(GBFB))
-relief2017_split<- transform(relief2017_split, RE24 = as.numeric(RE24))
-relief2017_split<- transform(relief2017_split, gmLI = as.numeric(gmLI))
-
-average$IP.int <- round(average$IP)
-average$diff <- round(average$IP - average$IP.int,1)
-average$add <- ifelse(average$diff == 0.2, 0.66, ifelse(average$diff == 0.1,0.34, 0))
-average$IP2 <- average$IP.int + average$add
-relief2016_split$IP.int <- round(relief2016_split$IP)
-relief2016_split$diff <- round(relief2016_split$IP - relief2016_split$IP.int,1)
-relief2016_split$add <-ifelse(relief2016_split$diff == 0.2, 0.66, ifelse(relief2016_split$diff == 0.1, 0.34, 0))
-relief2016_split$Innings <- relief2016_split$IP.int + relief2016_split$add
-relief2015_split$IP.int <- round(relief2015_split$IP)
-relief2015_split$diff <- round(relief2015_split$IP - relief2015_split$IP.int,1)
-relief2015_split$add <-ifelse(relief2015_split$diff == 0.2, 0.66, ifelse(relief2015_split$diff == 0.1, 0.34, 0))
-relief2015_split$Innings <- relief2015_split$IP.int + relief2015_split$add
-relief2014_split$IP.int <- round(relief2014_split$IP)
-relief2014_split$diff <- round(relief2014_split$IP - relief2014_split$IP.int,1)
-relief2014_split$add <-ifelse(relief2014_split$diff == 0.2, 0.66, ifelse(relief2014_split$diff == 0.1, 0.34, 0))
-relief2014_split$Innings <- relief2014_split$IP.int + relief2014_split$add
-relief2013_split$IP.int <- round(relief2013_split$IP)
-relief2013_split$diff <- round(relief2013_split$IP - relief2013_split$IP.int,1)
-relief2013_split$add <-ifelse(relief2013_split$diff == 0.2, 0.66, ifelse(relief2013_split$diff == 0.1, 0.34, 0))
-relief2013_split$Innings <- relief2013_split$IP.int + relief2013_split$add
-relief2012_split$IP.int <- round(relief2012_split$IP)
-relief2012_split$diff <- round(relief2012_split$IP - relief2012_split$IP.int,1)
-relief2012_split$add <-ifelse(relief2012_split$diff == 0.2, 0.66, ifelse(relief2012_split$diff == 0.1, 0.34, 0))
-relief2012_split$Innings <- relief2012_split$IP.int + relief2012_split$add
-
-relief2017_split$IP.int <- round(relief2017_split$IP)
-relief2017_split$diff <- round(relief2017_split$IP - relief2017_split$IP.int,1)
-relief2017_split$add <-ifelse(relief2017_split$diff == 0.2, 0.66, ifelse(relief2017_split$diff == 0.1, 0.34, 0))
-relief2017_split$Innings <- relief2017_split$IP.int + relief2017_split$add
-
-relief2012_split$gmLI <- relief2012_split$gmLI/average$gmLI[1]
-relief2013_split$gmLI <- relief2013_split$gmLI/average$gmLI[2]
-relief2014_split$gmLI <- relief2014_split$gmLI/average$gmLI[3]
-relief2015_split$gmLI <- relief2015_split$gmLI/average$gmLI[4]
-relief2016_split$gmLI <- relief2016_split$gmLI/average$gmLI[5]
-relief2017_split$gmLI <- relief2017_split$gmLI/average$gmLI[6]
-
-relief2016_split$ADRE <- relief2016_split$RE24 * relief2016_split$gmLI
-relief2016_split$ADREIP <- relief2016_split$ADRE / relief2016_split$Innings
-relief2015_split$ADRE <- relief2015_split$RE24 * relief2015_split$gmLI
-relief2015_split$ADREIP <- relief2015_split$ADRE / relief2015_split$Innings
-relief2014_split$ADRE <- relief2014_split$RE24 * relief2014_split$gmLI
-relief2014_split$ADREIP <- relief2014_split$ADRE / relief2014_split$Innings
-relief2013_split$ADRE <- relief2013_split$RE24 * relief2013_split$gmLI
-relief2013_split$ADREIP <- relief2013_split$ADRE / relief2013_split$Innings
-relief2012_split$ADRE <- relief2012_split$RE24 * relief2012_split$gmLI
-relief2012_split$ADREIP <- relief2012_split$ADRE / relief2012_split$Innings
-
-relief2017_split$ADRE <- relief2017_split$RE24 * relief2017_split$gmLI
-relief2017_split$ADREIP <- relief2017_split$ADRE / relief2017_split$Innings
-
-relief2012_split$Season <- 2012
-relief2013_split$Season <- 2013
-relief2014_split$Season <- 2014
-relief2015_split$Season <- 2015
-relief2016_split$Season <- 2016
-relief2017_split$Season <- 2017
-
-relief_split <- rbind(relief2012_split, relief2013_split, relief2014_split, relief2015_split, relief2016_split,relief2017_split)
-ISOSplit <- read.csv("data/ISOSplit.csv")
-ISOSplit <- ISOSplit[,c(2,1,4,17,19)]
-ISOSplit$ISO <- ISOSplit$SLG - ISOSplit$AVG
-ISOSplit <- ISOSplit[,c(1,2,3,6)]
-TeamConverter <- read.csv("data/Team Converter.csv")
-TeamConverter <- transform(TeamConverter, Team = as.character(Team))
-ISOSplit$Team <- plyr::mapvalues(ISOSplit$Team,
-                                 from = TeamConverter$TeamA,
-                                 to = TeamConverter$Team)
-relief_split <- merge(relief_split, ISOSplit, by = c("Name","Season", "Team"), all = TRUE)
-
-relief_split <- cbind(relief_split, predict(PCACON, newdata = relief_split))
-relief_split <- rename(relief_split, c("PC1" = "CON1", "PC2" = "CON2"))
-relief_split <- relief_split[,c(1,2,3,4,5,6,7,16,17,9,15)]
-relief_split$xADREIP <- predict(xADREIP, newdata = relief_split)
-relief_split$ISO <- round(relief_split$ISO,3)
-relief_split$gmLI <- round(relief_split$gmLI,2)
-relief_split$CON1 <- round(relief_split$CON1,2)
-relief_split$ADREIP <- round(relief_split$ADREIP,4)
-relief_split$xADREIP <- round(relief_split$xADREIP, 4)
-
-
-PlatoonScore <- read.csv("data/SplitsAll.csv")
+PlatoonScore <- read.csv("data/PlatoonSplitsAll.csv")
 PlatoonScore <- rename(PlatoonScore, c("Year" = "Season"))
-PlatoonScore <- transform(PlatoonScore, PlatoonScore = as.numeric(PlatoonScore))
+PlatoonScore <- transform(PlatoonScore, PlatoonScore = as.numeric(as.character(PlatoonScore)))
 
 SampleNew <- merge(Sample, PlatoonScore, by = c("Name","Season"), all = TRUE)
 SampleNew <- SampleNew[complete.cases(SampleNew),]
@@ -407,4 +283,133 @@ reliefNew$xADREIP <- round(reliefNew$xADREIP, 4)
 reliefNew$PC1 <- round(reliefNew$PC1, 2)
 reliefNew$PlatoonScore <- round(reliefNew$PlatoonScore, 3)
 
+relief2019_new <- subset(reliefNew, (Season >= 2019))
+relief2019_new$Dist <- 0
+relief2019_new <- relief2019_new[,c(1,2,3,4,5,6,7,8,9,10,13,15)]
+relief2019_new <- relief2019_new[-477,]
+SampleNewTester <- SampleNew[,c(1,2,3,4,5,6,9,7,8,10,12)]
+SampleNewTester$PlatoonScore <- round(SampleNewTester$PlatoonScore,3)
+SampleNewTester$ISO <- round(SampleNewTester$ISO,3)
+SampleNewTester$gmLI <- round(SampleNewTester$gmLI,2)
+SampleNewTester$ADREIP <- round(SampleNewTester$ADREIP,4)
+relief2019_new <- relief2019_new[relief2019_new$Name != "Austin Adams",]
+relief2019_new <- relief2019_new[relief2019_new$Name != "Javy Guerra",]
+player_comps <- function(player, number)
+{
+Dist <- mahalanobis(x = SampleNewTester[,c(5,6,7,8,9)], as.numeric(relief2019_new[which(relief2019_new$Name==player), c(5,6,7,8,9)]), cov(SampleNewTester[,c(5,6,7,8,9)]))
+SampleNewTester$Dist <- Dist
+SampleNewTester$Dist <- round(SampleNewTester$Dist,3)
+SampleNewTester <- SampleNewTester[order(SampleNewTester$Dist, decreasing=FALSE),]
+row.names(SampleNewTester) <- 1:nrow(SampleNewTester)
+rbind(relief2019_new[which(relief2019_new$Name==player),],SampleNewTester[1:number,])
+}
 
+
+player_comps_sum <- function(player)
+{
+  SampleNewTester_2 <- SampleNew[,c(1,2,3,4,5,6,9,7,8,10,12)]
+  SampleNewTester_2$PlatoonScore <- round(SampleNewTester_2$PlatoonScore,3)
+  SampleNewTester_2$ISO <- round(SampleNewTester_2$ISO,3)
+  SampleNewTester_2$gmLI <- round(SampleNewTester_2$gmLI,2)
+  SampleNewTester_2$ADREIP <- round(SampleNewTester_2$ADREIP,4)
+  relief2019_new <- relief2019_new[complete.cases(relief2019_new), ]
+  Dist <- mahalanobis(x = SampleNewTester_2[,c(5,6,7,8,9)], as.numeric(relief2019_new[which(relief2019_new$Name==player), c(5,6,7,8,9)]), cov(SampleNewTester_2[,c(5,6,7,8,9)]))
+  SampleNewTester_2$Dist <- Dist
+  SampleNewTester_2$Dist <- round(SampleNewTester_2$Dist,3)
+  SampleNewTester_2$W <- 1/SampleNewTester_2$Dist
+  SampleNewTester_2 <- SampleNewTester_2[order(SampleNewTester_2$Dist, decreasing=FALSE),]
+  wt.mean(SampleNewTester_2$ADREIP, SampleNewTester_2$W)
+}
+
+
+player_comps_std <- function(player)
+{
+  SampleNewTester_2 <- SampleNew[,c(1,2,3,4,5,6,9,7,8,10,12)]
+  SampleNewTester_2$PlatoonScore <- round(SampleNewTester_2$PlatoonScore,3)
+  SampleNewTester_2$ISO <- round(SampleNewTester_2$ISO,3)
+  SampleNewTester_2$gmLI <- round(SampleNewTester_2$gmLI,2)
+  SampleNewTester_2$ADREIP <- round(SampleNewTester_2$ADREIP,4)
+  relief2019_new <- relief2019_new[complete.cases(relief2019_new), ]
+  Dist <- mahalanobis(x = SampleNewTester_2[,c(5,6,7,8,9)], as.numeric(relief2019_new[which(relief2019_new$Name==player), c(5,6,7,8,9)]), cov(SampleNewTester_2[,c(5,6,7,8,9)]))
+  SampleNewTester_2$Dist <- Dist
+  SampleNewTester_2$Dist <- round(SampleNewTester_2$Dist,3)
+  SampleNewTester_2$W <- 1/SampleNewTester_2$Dist
+  SampleNewTester_2 <- SampleNewTester_2[order(SampleNewTester_2$Dist, decreasing=FALSE),]
+  wt.sd(SampleNewTester_2$ADREIP, SampleNewTester_2$W)
+}
+
+relief2019_comp <- relief2019_new[complete.cases(relief2019_new), ]
+relief2019_comp <- relief2019_comp[relief2019_comp$Name != "Austin Adams",]
+List_2019 <- as.list(relief2019_comp$Name)
+comps_2019 <- sapply(List_2019, player_comps_sum)
+std_2019 <- sapply(List_2019, player_comps_std)
+
+List_2019 <- data.frame(List_2019)
+comps_all <- data.frame(unlist(List_2019), unlist(comps_2019), unlist(std_2019))
+row.names(comps_all) <- 1:nrow(comps_all)
+
+colnames(comps_all) <- c("Name", "Comp ADREIP", "Comp STD")
+comps_all$`Comp ADREIP` <- round(comps_all$`Comp ADREIP`,4)
+comps_all$`Comp STD` <- round(comps_all$`Comp STD`,4)
+
+
+player_comps_groups <- function(player)
+{
+  SampleNewTester_2 <- SampleNew[,c(1,2,3,4,5,6,9,7,8,10,12)]
+  SampleNewTester_2$PlatoonScore <- round(SampleNewTester_2$PlatoonScore,3)
+  SampleNewTester_2$ISO <- round(SampleNewTester_2$ISO,3)
+  SampleNewTester_2$gmLI <- round(SampleNewTester_2$gmLI,2)
+  SampleNewTester_2$ADREIP <- round(SampleNewTester_2$ADREIP,4)
+  relief2019_new <- relief2019_new[complete.cases(relief2019_new), ]
+  Dist <- mahalanobis(x = SampleNewTester_2[,c(5,6,7,8,9)], as.numeric(relief2019_new[which(relief2019_new$Name==player), c(5,6,7,8,9)]), cov(SampleNewTester_2[,c(5,6,7,8,9)]))
+  SampleNewTester_2$Dist <- Dist
+  SampleNewTester_2$Dist <- round(SampleNewTester_2$Dist,3)
+  SampleNewTester_2$W <- 1/SampleNewTester_2$Dist
+  SampleNewTester_2 <- SampleNewTester_2[order(SampleNewTester_2$Dist, decreasing=FALSE),]
+  total <- sum(SampleNewTester_2$W)
+  SampleNewTester_2$Prob <- SampleNewTester_2$W/total
+  prob_dist <- list(sum(SampleNewTester_2[which(SampleNewTester_2[,11] < -0.1),14]),
+                    sum(SampleNewTester_2[which(SampleNewTester_2[,11] < 0 & SampleNewTester_2[,11] >= -0.1),14]),
+                    sum(SampleNewTester_2[which(SampleNewTester_2[,11] < 0.05 & SampleNewTester_2[,11] >= 0),14]),
+                    sum(SampleNewTester_2[which(SampleNewTester_2[,11] < .1 & SampleNewTester_2[,11] >= 0.05),14]),
+                    sum(SampleNewTester_2[which(SampleNewTester_2[,11] < .15 & SampleNewTester_2[,11] >= .1),14]),
+                    sum(SampleNewTester_2[which(SampleNewTester_2[,11] < .2 & SampleNewTester_2[,11] >= .15),14]),
+                    sum(SampleNewTester_2[which(SampleNewTester_2[,11] < .25 & SampleNewTester_2[,11] >= .2),14]),
+                    sum(SampleNewTester_2[which(SampleNewTester_2[,11] < .3 & SampleNewTester_2[,11] >= .25),14]),
+                    sum(SampleNewTester_2[which(SampleNewTester_2[,11] < .35 & SampleNewTester_2[,11] >= .3),14]),
+                    sum(SampleNewTester_2[which(SampleNewTester_2[,11] < .4 & SampleNewTester_2[,11] >= .35),14]),
+                    sum(SampleNewTester_2[which(SampleNewTester_2[,11] < .45 & SampleNewTester_2[,11] >= .4),14]),
+                    sum(SampleNewTester_2[which(SampleNewTester_2[,11] < .5 & SampleNewTester_2[,11] >= .45),14]),
+                    sum(SampleNewTester_2[which(SampleNewTester_2[,11] < .55 & SampleNewTester_2[,11] >= .5),14]),
+                    sum(SampleNewTester_2[which(SampleNewTester_2[,11] < .6 & SampleNewTester_2[,11] >= .55),14]),
+                    sum(SampleNewTester_2[which(SampleNewTester_2[,11] >= .6),14]))
+}
+
+probs_2019 <- sapply(List_2019, player_comps_groups)
+probs_2019 <- t(probs_2019)
+row.names(probs_2019) <- 1:nrow(probs_2019)
+probs_2019 <- data.frame(probs_2019)
+list_names <- t(List_2019)
+probs_2019$Name <- list_names[,1]
+probs_2019 <- probs_2019[,c(16,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15)]
+probs_2019 <- rename(probs_2019, c('X1' = '<-0.1',	'X2' = '-0.1-0',	'X3' = '0-0.05',	'X4' = '0.05-0.1',	'X5' = '0.1-0.15',	'X6' = '0.15-0.2',	'X7' = '0.2-0.25',	'X8' = '0.25-0.3',	'X9' = '0.3-0.35',	'X10' = '0.35-0.4',	'X11' = '0.4-0.45',	'X12' = '0.45-0.5',	'X13' = '0.5-0.55',	'X14' = '0.55-0.6',	'X15' = '>=0.6'))
+probs_2019 <- apply(probs_2019,2,as.character)
+
+write.table(probs_2019, file = "allprobs.csv", sep = ",")
+
+
+
+compare_chart <- function(player,player2)
+{
+  probs <- player_comps_groups(player)
+  probs2 <- player_comps_groups(player2)
+  probs2 <- data.frame(probs2)
+  colnames(probs2) <- c('X1' = '<-0.1',	'X2' = '-0.1-0',	'X3' = '0-0.05',	'X4' = '0.05-0.1',	'X5' = '0.1-0.15',	'X6' = '0.15-0.2',	'X7' = '0.2-0.25',	'X8' = '0.25-0.3',	'X9' = '0.3-0.35',	'X10' = '0.35-0.4',	'X11' = '0.4-0.45',	'X12' = '0.45-0.5',	'X13' = '0.5-0.55',	'X14' = '0.55-0.6',	'X15' = '>=0.6')
+  probs <- data.frame(probs)
+  colnames(probs) <- c('X1' = '<-0.1',	'X2' = '-0.1-0',	'X3' = '0-0.05',	'X4' = '0.05-0.1',	'X5' = '0.1-0.15',	'X6' = '0.15-0.2',	'X7' = '0.2-0.25',	'X8' = '0.25-0.3',	'X9' = '0.3-0.35',	'X10' = '0.35-0.4',	'X11' = '0.4-0.45',	'X12' = '0.45-0.5',	'X13' = '0.5-0.55',	'X14' = '0.55-0.6',	'X15' = '>=0.6')
+  probs <- rbind(as.numeric(probs),as.numeric(probs2))
+  barplot(probs, main="Compare Chart", 
+          xlab="Ranges", beside = T,col=c("darkblue","red"),legend = c(player,player2),
+          names.arg = c('<-0.1','-0.1-0',	'0-0.05',	'0.05-0.1',	'0.1-0.15',	'0.15-0.2',	'0.2-0.25',	'0.25-0.3',	'0.3-0.35',	'0.35-0.4',	'0.4-0.45',	'0.45-0.5','0.5-0.55','0.55-0.6','>=0.6'))
+}
+compare_chart("Wade Davis","Adam Ottavino")
